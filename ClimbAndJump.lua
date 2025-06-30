@@ -586,7 +586,7 @@ local function manageLoop(loopType, shouldStart, tweenFunction)
                (loopType == "250k" and not looping250k) then return end
             
             tweenFunction(function()
-                task.wait(7)
+                task.wait(9)
                 loopStep()
             end)
         end
