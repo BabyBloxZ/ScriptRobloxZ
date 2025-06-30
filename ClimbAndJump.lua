@@ -425,8 +425,8 @@ local function tween250kWins(callback)
     
     local startPos = hrp.Position
     local step1 = Vector3.new(startPos.X, 14402, startPos.Z)
-    local step2 = Vector3.new(40000, 14403, -220)
-    local step3 = Vector3.new(39999, 14403, -62)
+    local step2 = Vector3.new(40000, 14402, -221)
+    local step3 = Vector3.new(40000, 14402, -62)
     
     createTween(hrp, CFrame.new(step1), 0.1, Enum.EasingStyle.Sine, function()
         createTween(hrp, CFrame.new(step2), 0.6, Enum.EasingStyle.Sine, function()
@@ -586,7 +586,7 @@ local function manageLoop(loopType, shouldStart, tweenFunction)
                (loopType == "250k" and not looping250k) then return end
             
             tweenFunction(function()
-                task.wait(9)
+                task.wait(12)
                 loopStep()
             end)
         end
