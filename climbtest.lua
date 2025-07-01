@@ -1,13 +1,13 @@
--- Load BabyBloxZ Library
-local BabyBloxZ = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Load Rayfield Library
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local keyLink = "https://link-target.net/1343847/1Ovaz8Yyhqpj"
 setclipboard(keyLink)
 
 -- UI Setup
-local Window = BabyBloxZ:CreateWindow({
+local Window = Rayfield:CreateWindow({
     Name = "Climb and Jump HUB",
-    LoadingTitle = "Loading Ultimate HUB",
+    LoadingTitle = "Loading Auto Farm System",
     LoadingSubtitle = "by BabyBloxZ",
     ConfigurationSaving = {
         Enabled = true,
@@ -30,7 +30,7 @@ local Window = BabyBloxZ:CreateWindow({
     }
 })
 
-BabyBloxZ:Notify({
+Rayfield:Notify({
     Title = "Key Copied",
     Content = "Key has been copied to clipboard: "..keyLink,
     Duration = 8,
@@ -38,250 +38,259 @@ BabyBloxZ:Notify({
 })
 
 -- Notify
-BabyBloxZ:Notify({
+Rayfield:Notify({
     Title = "Script Loaded",
     Content = "Auto Farm and Gamepass Hack Activated",
     Duration = 6,
     Image = 4483362458
 })
 
--- =============================================
--- COMPREHENSIVE GAMEPASS BYPASS SYSTEM
--- =============================================
-local originalRemotes = {}
-local gamepassStates = {}
-local bypassEnabled = true
-
--- List of all possible remote patterns
-local remotePatterns = {
-    "Gamepass", "Pass", "VIP", "Vip", "JumpPal", "Hatch", "Validation", "Check", "Validate", 
-    "Purchase", "Activate", "System", "Reward", "Perk", "Benefit", "Upgrade", "Boost", 
-    "Advantage", "Feature", "Unlock", "Special", "Offer", "Deal", "Promo", "Gift", "Bonus",
-    "Fast", "Triple", "Tenfold", "Auto", "Collect", "Luck", "Secret", "Super", "Ultra", "Skip",
-    "Season", "Double", "Win", "Speed", "Gold", "Buff", "BuffDetail", "Pal", "Pet", "Character"
-}
-
--- Hook any remote that matches patterns
-local function hookAllGamepassRemotes()
-    if not bypassEnabled then return end
-    
-    -- Hook existing remotes
-    for _, obj in ipairs(game:GetDescendants()) do
-        if (obj:IsA("RemoteFunction") or (obj:IsA("RemoteEvent")) then
-            for _, pattern in ipairs(remotePatterns) do
-                if obj.Name:lower():find(pattern:lower()) then
-                    -- Backup original
-                    if not originalRemotes[obj] then
-                        originalRemotes[obj] = {
-                            Invoke = (obj:IsA("RemoteFunction")) and obj.Invoke or nil,
-                            FireServer = (obj:IsA("RemoteEvent")) and obj.FireServer or nil
-                        }
-                    end
-                    
-                    -- Hook function
-                    if obj:IsA("RemoteFunction") then
-                        hookfunction(obj.Invoke, function(_, ...)
-                            return true
-                        end)
-                    elseif obj:IsA("RemoteEvent") then
-                        hookfunction(obj.FireServer, function(_, ...)
-                            return nil
-                        end)
-                    end
-                end
-            end
-        end
-    end
-    
-    -- Hook new remotes
-    game.DescendantAdded:Connect(function(obj)
-        if (obj:IsA("RemoteFunction") or (obj:IsA("RemoteEvent")) then
-            for _, pattern in ipairs(remotePatterns) do
-                if obj.Name:lower():find(pattern:lower()) then
-                    -- Backup original
-                    if not originalRemotes[obj] then
-                        originalRemotes[obj] = {
-                            Invoke = (obj:IsA("RemoteFunction")) and obj.Invoke or nil,
-                            FireServer = (obj:IsA("RemoteEvent")) and obj.FireServer or nil
-                        }
-                    end
-                    
-                    -- Hook function
-                    if obj:IsA("RemoteFunction") then
-                        hookfunction(obj.Invoke, function(_, ...)
-                            return true
-                        end)
-                    elseif obj:IsA("RemoteEvent") then
-                        hookfunction(obj.FireServer, function(_, ...)
-                            return nil
-                        end)
-                    end
-                end
-            end
-        end
-    end)
-end
-
--- Metatable hook for all remote calls
-local function hookMetatable()
-    if not bypassEnabled then return end
-    
-    local mt = getrawmetatable(game)
-    local __namecall = mt.__namecall
-    
-    setreadonly(mt, false)
-    
-    mt.__namecall = newcclosure(function(self, ...)
-        local method = getnamecallmethod()
-        local remoteName = tostring(self)
-        
-        -- Bypass all possible gamepass checks
-        for _, pattern in ipairs(remotePatterns) do
-            if remoteName:lower():find(pattern:lower()) then
-                return true
-            end
-        end
-        
-        return __namecall(self, ...)
-    end)
-end
-
--- Enable comprehensive bypass
-local function enableFullBypass()
-    if not hookfunction or not getrawmetatable then
-        BabyBloxZ:Notify({
-            Title = "ERROR",
-            Content = "Your exploit doesn't support required features",
-            Duration = 6,
-        })
-        return false
-    end
-
-    hookAllGamepassRemotes()
-    hookMetatable()
-    
-    return true
-end
-
--- Apply bypass on startup
-enableFullBypass()
-
--- Gamepass Activation System
-local function activateGamepass(passName, value)
+-- Enhanced Gamepass System with Remote Hooking
+local function setGamepassValue(passName, value)
     local player = game:GetService("Players").LocalPlayer
     
-    -- Create GamePass folder if needed
+    -- Create GamePass folder if it doesn't exist
     if not player:FindFirstChild("GamePass") then
         local folder = Instance.new("Folder")
         folder.Name = "GamePass"
         folder.Parent = player
     end
     
-    -- Update gamepass state
-    gamepassStates[passName] = value
-    
-    -- Special handling for each gamepass type
-    if passName == "Fast-Hatch" then
-        -- Set client-side value
-        local pass = player.GamePass:FindFirstChild("Fast-Hatch") or Instance.new("NumberValue")
-        pass.Name = "Fast-Hatch"
-        pass.Value = value and 1 or 0
-        pass.Parent = player.GamePass
-        
-        -- Simulate server activation
-        for _, remote in pairs(game:GetService("ReplicatedStorage"):GetChildren()) do
-            if remote.Name:lower():find("hatch") then
-                pcall(function()
-                    if remote:IsA("RemoteEvent") then
-                        remote:FireServer(value)
-                    elseif remote:IsA("RemoteFunction") then
-                        remote:InvokeServer(value)
-                    end
-                end)
-            end
-        end
-        return
-    end
-    
+    -- Handle special cases
     if passName == "VIP" then
         -- Set VIP GamePass value
-        local vipPass = player.GamePass:FindFirstChild("VIP") or Instance.new("NumberValue")
-        vipPass.Name = "VIP"
-        vipPass.Value = value and 1 or 0
-        vipPass.Parent = player.GamePass
+        local vipPass = player.GamePass:FindFirstChild("VIP")
+        if not vipPass then
+            vipPass = Instance.new("NumberValue")
+            vipPass.Name = "VIP"
+            vipPass.Parent = player.GamePass
+        end
+        vipPass.Value = value
         
         -- Set VIP gold bonus
         if not player:FindFirstChild("GoldBuffDetail") then
-            Instance.new("Folder", player).Name = "GoldBuffDetail"
+            local goldBuff = Instance.new("Folder")
+            goldBuff.Name = "GoldBuffDetail"
+            goldBuff.Parent = player
         end
         
-        local vipGold = player.GoldBuffDetail:FindFirstChild("VipGoldAdd") or Instance.new("NumberValue")
-        vipGold.Name = "VipGoldAdd"
-        vipGold.Value = value and 0.5 or 0
-        vipGold.Parent = player.GoldBuffDetail
-        
-        -- Simulate server activation
-        for _, remote in pairs(game:GetService("ReplicatedStorage"):GetChildren()) do
-            if remote.Name:lower():find("vip") then
-                pcall(function()
-                    if remote:IsA("RemoteEvent") then
-                        remote:FireServer(value)
-                    elseif remote:IsA("RemoteFunction") then
-                        remote:InvokeServer(value)
-                    end
-                end)
-            end
+        local vipGold = player.GoldBuffDetail:FindFirstChild("VipGoldAdd")
+        if not vipGold then
+            vipGold = Instance.new("NumberValue")
+            vipGold.Name = "VipGoldAdd"
+            vipGold.Parent = player.GoldBuffDetail
         end
+        vipGold.Value = value
+        
         return
     end
     
     if passName == "JumpPalPass" then
-        local pass = player.GamePass:FindFirstChild("JumpPalPass") or Instance.new("NumberValue")
-        pass.Name = "JumpPalPass"
-        pass.Value = value and 1 or 0
-        pass.Parent = player.GamePass
+        local pass = player.GamePass:FindFirstChild("JumpPalPass")
+        if not pass then
+            pass = Instance.new("NumberValue")
+            pass.Name = "JumpPalPass"
+            pass.Parent = player.GamePass
+        end
+        pass.Value = value
         
-        -- Set max JumpPals (server-side)
-        player.JumpPalMax.Value = value and 5 or 3
-        
-        -- Simulate server activation
-        for _, remote in pairs(game:GetService("ReplicatedStorage"):GetChildren()) do
-            if remote.Name:lower():find("jumppal") then
-                pcall(function()
-                    if remote:IsA("RemoteEvent") then
-                        remote:FireServer(value)
-                    elseif remote:IsA("RemoteFunction") then
-                        remote:InvokeServer(value)
-                    end
-                end)
-            end
+        -- Set max JumpPals
+        if value == 1 then
+            player.JumpPalMax.Value = 5
         end
         return
     end
     
-    -- For other gamepasses
-    local pass = player.GamePass:FindFirstChild(passName) or Instance.new("NumberValue")
-    pass.Name = passName
-    pass.Value = value and 1 or 0
-    pass.Parent = player.GamePass
+    -- Handle 2XSpeed and 2XWin
+    if passName == "2XSpeed" or passName == "2XWin" then
+        local pass = player.GamePass:FindFirstChild(passName)
+        if not pass then
+            pass = Instance.new("NumberValue")
+            pass.Name = passName
+            pass.Parent = player.GamePass
+        end
+        pass.Value = value
+        return
+    end
     
-    -- Simulate server activation
-    for _, remote in pairs(game:GetService("ReplicatedStorage"):GetChildren()) do
-        if remote.Name:lower():find(passName:lower()) then
-            pcall(function()
-                if remote:IsA("RemoteEvent") then
-                    remote:FireServer(value)
-                elseif remote:IsA("RemoteFunction") then
-                    remote:InvokeServer(value)
-                end
-            end)
+    -- For normal gamepasses
+    local pass = player.GamePass:FindFirstChild(passName)
+    if not pass then
+        pass = Instance.new("NumberValue")
+        pass.Name = passName
+        pass.Parent = player.GamePass
+    end
+    
+    pass.Value = value
+end
+
+-- Advanced Remote Function Hook
+local function enableRemoteHook()
+    if not hookmetamethod then return false end
+
+    local originalNamecall
+    originalNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
+        local remoteName = tostring(self)
+        
+        -- Bypass all gamepass checks
+        if method == "InvokeServer" and remoteName:find("Gamepass") then
+            return true
+        end
+        
+        -- Bypass VIP checks
+        if method == "InvokeServer" and remoteName:find("Vip") then
+            return true
+        end
+        
+        -- Bypass JumpPal checks
+        if method == "InvokeServer" and remoteName:find("JumpPal") then
+            return true
+        end
+
+        -- Bypass WalkSpeed validation
+        if method == "InvokeServer" and remoteName:find("Speed") then
+            return true
+        end
+        
+        return originalNamecall(self, ...)
+    end)
+    
+    return true
+end
+
+-- Enable remote hook on startup
+enableRemoteHook()
+
+-- WalkSpeed System with Server-Side Bypass
+local desiredWalkSpeed = 16
+local walkSpeedEnabled = false
+local walkSpeedLoop = nil
+
+local function setWalkSpeed()
+    local player = game:GetService("Players").LocalPlayer
+    local char = player.Character
+    if char then
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = desiredWalkSpeed
         end
     end
 end
 
--- =============================================
--- AUTO FARM SYSTEM
--- =============================================
+local function startWalkSpeedLoop()
+    if walkSpeedLoop then return end
+    walkSpeedLoop = task.spawn(function()
+        while walkSpeedEnabled do
+            setWalkSpeed()
+            task.wait(0.5)
+        end
+        walkSpeedLoop = nil
+    end)
+end
+
+local function stopWalkSpeedLoop()
+    if walkSpeedLoop then
+        task.cancel(walkSpeedLoop)
+        walkSpeedLoop = nil
+    end
+end
+
+-- Gamepass Tab
+local GamepassTab = Window:CreateTab("Gamepass Hack", 4483362458)
+
+GamepassTab:CreateButton({
+    Name = "Enable Gamepass Bypass",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "Success",
+            Content = "Gamepass validation bypass active!",
+            Duration = 5,
+        })
+    end
+})
+
+-- All gamepasses with special handling
+local gamepasses = {
+    {Name = "Fast-Hatch", Type = "normal"},
+    {Name = "Triple-Hatch", Type = "normal"},
+    {Name = "Tenfold-Hatch", Type = "normal"},
+    {Name = "AutoCollect", Type = "normal"},
+    {Name = "Luck", Type = "normal"},
+    {Name = "SecretLucky2", Type = "normal"},
+    {Name = "Super-Luck", Type = "normal"},
+    {Name = "Ultra-Luck", Type = "normal"},
+    {Name = "VIP", Type = "special"},
+    {Name = "JumpPalPass", Type = "special"},
+    {Name = "SkipAllSeason", Type = "normal"},
+    {Name = "2XSpeed", Type = "normal"},
+    {Name = "2XWin", Type = "normal"},
+}
+
+for _, pass in ipairs(gamepasses) do
+    GamepassTab:CreateToggle({
+        Name = pass.Name,
+        CurrentValue = false,
+        Callback = function(Value)
+            setGamepassValue(pass.Name, Value and 1 or 0)
+            
+            if pass.Name == "JumpPalPass" and Value then
+                -- Set JumpPalMax to 5 when JumpPalPass is enabled
+                game:GetService("Players").LocalPlayer.JumpPalMax.Value = 5
+            end
+            
+            Rayfield:Notify({
+                Title = "Gamepass Updated",
+                Content = pass.Name .. ": " .. (Value and "ENABLED" or "DISABLED"),
+                Duration = 3,
+            })
+        end
+    })
+end
+
+-- JumpPalMax Slider
+GamepassTab:CreateSlider({
+    Name = "JumpPal Max Count",
+    Range = {1, 5},
+    Increment = 1,
+    Suffix = "JumpPals",
+    CurrentValue = 1,
+    Flag = "JumpPalMaxSlider",
+    Callback = function(Value)
+        game:GetService("Players").LocalPlayer.JumpPalMax.Value = Value
+        Rayfield:Notify({
+            Title = "JumpPal Max Set",
+            Content = "JumpPal max count set to: " .. Value,
+            Duration = 3,
+        })
+    end
+})
+
+-- PetMax Feature
+GamepassTab:CreateToggle({
+    Name = "Unlock All Pets (Max 1000)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            game:GetService("Players").LocalPlayer.PetMax.Value = 1000
+            Rayfield:Notify({
+                Title = "Pets Unlocked",
+                Content = "Max pets set to 1000!",
+                Duration = 3,
+            })
+        else
+            game:GetService("Players").LocalPlayer.PetMax.Value = 3
+            Rayfield:Notify({
+                Title = "Pets Reset",
+                Content = "Max pets reset to default (3)",
+                Duration = 3,
+            })
+        end
+    end
+})
+
+-- Auto Farm System
 local function createTween(part, targetCFrame, duration, easingStyle, callback)
     local TweenService = game:GetService("TweenService")
     local tween = TweenService:Create(part, TweenInfo.new(duration, easingStyle), {CFrame = targetCFrame})
@@ -465,147 +474,7 @@ local function tween250kWins(callback)
     end)
 end
 
--- =============================================
--- UI: GAMEPASS TAB
--- =============================================
-local GamepassTab = Window:CreateTab("Gamepass Hack", 4483362458)
-
--- Add info labels
-GamepassTab:CreateLabel("FULL GAMEPASS BYPASS ACTIVATED")
-GamepassTab:CreateLabel("Covers all possible remote patterns!")
-
-GamepassTab:CreateToggle({
-    Name = "Enable Bypass System",
-    CurrentValue = true,
-    Callback = function(Value)
-        bypassEnabled = Value
-        if Value then
-            enableFullBypass()
-            -- Reapply gamepass states
-            for passName, state in pairs(gamepassStates) do
-                activateGamepass(passName, state)
-            end
-        end
-        BabyBloxZ:Notify({
-            Title = "Bypass System",
-            Content = Value and "ENABLED" or "DISABLED",
-            Duration = 3,
-        })
-    end
-})
-
--- All gamepasses with server activation
-local gamepasses = {
-    "Fast-Hatch",
-    "Triple-Hatch",
-    "Tenfold-Hatch",
-    "AutoCollect",
-    "Luck",
-    "SecretLucky2",
-    "Super-Luck",
-    "Ultra-Luck",
-    "VIP",
-    "JumpPalPass",
-    "SkipAllSeason",
-    "2XSpeed",
-    "2XWin",
-    "GoldBonus",
-    "JumpBoost",
-    "SpeedBoost",
-    "LuckyCharm",
-    "DoubleRewards",
-    "AutoHatch",
-    "InstantWin"
-}
-
-for _, passName in ipairs(gamepasses) do
-    GamepassTab:CreateToggle({
-        Name = passName,
-        CurrentValue = false,
-        Callback = function(Value)
-            activateGamepass(passName, Value)
-            
-            BabyBloxZ:Notify({
-                Title = "Gamepass Updated",
-                Content = passName .. ": " .. (Value and "ENABLED" or "DISABLED"),
-                Duration = 3,
-            })
-        end
-    })
-end
-
--- Pet System (Server-Side)
-GamepassTab:CreateToggle({
-    Name = "Unlimited Pet Capacity",
-    CurrentValue = false,
-    Callback = function(Value)
-        local player = game:GetService("Players").LocalPlayer
-        
-        -- Client-side value
-        player.PetMax.Value = Value and 1000 or 3
-        
-        -- Server-side activation
-        activateGamepass("PetCapacity", Value)
-        
-        -- Simulate server calls
-        for _, remote in pairs(game:GetService("ReplicatedStorage"):GetChildren()) do
-            if remote.Name:lower():find("pet") or remote.Name:lower():find("capacity") then
-                pcall(function()
-                    if remote:IsA("RemoteEvent") then
-                        remote:FireServer(Value and 1000 or 3)
-                    elseif remote:IsA("RemoteFunction") then
-                        remote:InvokeServer(Value and 1000 or 3)
-                    end
-                end)
-            end
-        end
-        
-        BabyBloxZ:Notify({
-            Title = "Pet System",
-            Content = "Unlimited Pets: " .. (Value and "ON (1000)" or "OFF (3)"),
-            Duration = 3,
-        })
-    end
-})
-
--- JumpPal System (Server-Side)
-GamepassTab:CreateSlider({
-    Name = "JumpPal Max Count",
-    Range = {1, 20},
-    Increment = 1,
-    Suffix = "JumpPals",
-    CurrentValue = 3,
-    Flag = "JumpPalMaxSlider",
-    Callback = function(Value)
-        local player = game:GetService("Players").LocalPlayer
-        
-        -- Client-side value
-        player.JumpPalMax.Value = Value
-        
-        -- Server-side activation
-        for _, remote in pairs(game:GetService("ReplicatedStorage"):GetChildren()) do
-            if remote.Name:lower():find("jumppal") or remote.Name:lower():find("palmax") then
-                pcall(function()
-                    if remote:IsA("RemoteEvent") then
-                        remote:FireServer(Value)
-                    elseif remote:IsA("RemoteFunction") then
-                        remote:InvokeServer(Value)
-                    end
-                end)
-            end
-        end
-        
-        BabyBloxZ:Notify({
-            Title = "JumpPal Max Set",
-            Content = "JumpPal max count set to: " .. Value,
-            Duration = 3,
-        })
-    end
-})
-
--- =============================================
--- UI: AUTO FARM TAB
--- =============================================
+-- Auto Farm Tab
 local AutoFarmTab = Window:CreateTab("Auto Farm", 4483362458)
 
 -- Single Run Buttons
@@ -613,7 +482,7 @@ AutoFarmTab:CreateButton({
     Name = "1 Win (Single Run)",
     Callback = function()
         tween1Win(function()
-            BabyBloxZ:Notify({
+            Rayfield:Notify({
                 Title = "Complete",
                 Content = "Finished 1 Win route",
                 Duration = 3,
@@ -626,7 +495,7 @@ AutoFarmTab:CreateButton({
     Name = "5 Wins (Single Run)",
     Callback = function()
         tween5Wins(function()
-            BabyBloxZ:Notify({
+            Rayfield:Notify({
                 Title = "Complete",
                 Content = "Finished 5 Wins route",
                 Duration = 3,
@@ -639,7 +508,7 @@ AutoFarmTab:CreateButton({
     Name = "20 Wins (Single Run)",
     Callback = function()
         tween20Wins(function()
-            BabyBloxZ:Notify({
+            Rayfield:Notify({
                 Title = "Complete",
                 Content = "Finished 20 Wins route",
                 Duration = 3,
@@ -652,7 +521,7 @@ AutoFarmTab:CreateButton({
     Name = "100 Wins (Single Run)",
     Callback = function()
         tween100Wins(function()
-            BabyBloxZ:Notify({
+            Rayfield:Notify({
                 Title = "Complete",
                 Content = "Finished 100 Wins route",
                 Duration = 3,
@@ -665,7 +534,7 @@ AutoFarmTab:CreateButton({
     Name = "500 Wins (Single Run)",
     Callback = function()
         tween500Wins(function()
-            BabyBloxZ:Notify({
+            Rayfield:Notify({
                 Title = "Complete",
                 Content = "Finished 500 Wins route",
                 Duration = 3,
@@ -678,7 +547,7 @@ AutoFarmTab:CreateButton({
     Name = "2K Wins (Single Run)",
     Callback = function()
         tween2kWins(function()
-            BabyBloxZ:Notify({
+            Rayfield:Notify({
                 Title = "Complete",
                 Content = "Finished 2K Wins route",
                 Duration = 3,
@@ -691,7 +560,7 @@ AutoFarmTab:CreateButton({
     Name = "10K Wins (Single Run)",
     Callback = function()
         tween10kWins(function()
-            BabyBloxZ:Notify({
+            Rayfield:Notify({
                 Title = "Complete",
                 Content = "Finished 10K Wins route",
                 Duration = 3,
@@ -704,7 +573,7 @@ AutoFarmTab:CreateButton({
     Name = "50K Wins (Single Run)",
     Callback = function()
         tween50kWins(function()
-            BabyBloxZ:Notify({
+            Rayfield:Notify({
                 Title = "Complete",
                 Content = "Finished 50K Wins route",
                 Duration = 3,
@@ -717,7 +586,7 @@ AutoFarmTab:CreateButton({
     Name = "250K Wins (Single Run)",
     Callback = function()
         tween250kWins(function()
-            BabyBloxZ:Notify({
+            Rayfield:Notify({
                 Title = "Complete",
                 Content = "Finished 250K Wins route",
                 Duration = 3,
@@ -837,61 +706,45 @@ AutoFarmTab:CreateToggle({
     end
 })
 
--- =============================================
--- UI: MISC TAB
--- =============================================
+-- Misc Features
 local MiscTab = Window:CreateTab("Misc", 4483362458)
 
--- Walk Speed Control
-local walkSpeedValue = 16
-local walkSpeedEnabled = false
-
-local function updateWalkSpeed()
-    local character = game.Players.LocalPlayer.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = walkSpeedEnabled and walkSpeedValue or 16
-        end
-    end
-end
+-- WalkSpeed Control
+MiscTab:CreateSection("Movement Control")
 
 MiscTab:CreateToggle({
-    Name = "Enable Custom Walk Speed",
+    Name = "Enable WalkSpeed",
     CurrentValue = false,
     Callback = function(Value)
         walkSpeedEnabled = Value
-        updateWalkSpeed()
-        BabyBloxZ:Notify({
-            Title = "Walk Speed",
-            Content = Value and "Enabled" or "Disabled",
-            Duration = 2,
-        })
-    end
-})
-
-MiscTab:CreateInput({
-    Name = "Walk Speed Value",
-    PlaceholderText = tostring(walkSpeedValue),
-    RemoveTextAfterFocusLost = false,
-    Callback = function(Text)
-        local newSpeed = tonumber(Text)
-        if newSpeed and newSpeed > 0 then
-            walkSpeedValue = newSpeed
-            if walkSpeedEnabled then
-                updateWalkSpeed()
-            end
-            BabyBloxZ:Notify({
-                Title = "Walk Speed Updated",
-                Content = "Set to: " .. walkSpeedValue,
+        if Value then
+            startWalkSpeedLoop()
+            Rayfield:Notify({
+                Title = "WalkSpeed",
+                Content = "WalkSpeed enabled: " .. desiredWalkSpeed,
                 Duration = 3,
             })
         else
-            BabyBloxZ:Notify({
-                Title = "Invalid Value",
-                Content = "Please enter a valid number",
+            stopWalkSpeedLoop()
+            Rayfield:Notify({
+                Title = "WalkSpeed",
+                Content = "WalkSpeed disabled",
                 Duration = 3,
             })
+        end
+    end
+})
+
+MiscTab:CreateSlider({
+    Name = "WalkSpeed Value",
+    Range = {16, 200},
+    Increment = 1,
+    Suffix = "speed",
+    CurrentValue = 16,
+    Callback = function(Value)
+        desiredWalkSpeed = Value
+        if walkSpeedEnabled then
+            setWalkSpeed()
         end
     end
 })
@@ -909,7 +762,7 @@ MiscTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         InfiniteJumpEnabled = Value
-        BabyBloxZ:Notify({
+        Rayfield:Notify({
             Title = "Infinite Jump",
             Content = Value and "Enabled" or "Disabled",
             Duration = 2,
@@ -931,7 +784,7 @@ MiscTab:CreateButton({
     Name = "Reset Character",
     Callback = function()
         game:GetService("Players").LocalPlayer.Character:BreakJoints()
-        BabyBloxZ:Notify({
+        Rayfield:Notify({
             Title = "Character Reset",
             Content = "Your character has been reset",
             Duration = 3,
@@ -940,43 +793,6 @@ MiscTab:CreateButton({
 })
 
 -- Credits
+MiscTab:CreateSection("Credits")
 MiscTab:CreateLabel("Script by BabyBloxZ")
-MiscTab:CreateLabel("UI by BabyBloxZ")
-
--- =============================================
--- INITIALIZATION
--- =============================================
--- Connect character added event for walk speed
-game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
-    -- Reapply walk speed if needed
-    if walkSpeedEnabled then
-        character:WaitForChild("Humanoid")
-        updateWalkSpeed()
-    end
-    
-    -- Reapply gamepass states
-    task.wait(2)
-    for passName, state in pairs(gamepassStates) do
-        activateGamepass(passName, state)
-    end
-end)
-
--- Auto farm safety
-game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(character)
-    task.wait(1)
-    if looping1 or looping5 or looping20 or looping100 or looping500 or looping2k or looping10k or looping50k or looping250k then
-        BabyBloxZ:Notify({
-            Title = "Auto Farm Restarted",
-            Content = "Resuming auto farm after respawn",
-            Duration = 4,
-        })
-    end
-end)
-
--- Initialize bypass
-task.spawn(function()
-    while true do
-        enableFullBypass()
-        task.wait(30) -- Reinforce bypass every 30 seconds
-    end
-end)
+MiscTab:CreateLabel("UI by Rayfield")
