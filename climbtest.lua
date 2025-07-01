@@ -154,6 +154,11 @@ local function enableRemoteHook()
             return true
         end
         
+        -- Bypass ClimbSpeed validation
+        if method == "InvokeServer" and remoteName:find("Climb") then
+            return true
+        end
+
         return originalNamecall(self, ...)
     end)
     
@@ -194,6 +199,40 @@ local function stopWalkSpeedLoop()
     if walkSpeedLoop then
         task.cancel(walkSpeedLoop)
         walkSpeedLoop = nil
+    end
+end
+
+-- Climb Speed System
+local desiredClimbSpeed = 16
+local climbSpeedEnabled = false
+local climbSpeedLoop = nil
+
+local function setClimbSpeed()
+    local player = game:GetService("Players").LocalPlayer
+    local char = player.Character
+    if char then
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.ClimbSpeed = desiredClimbSpeed
+        end
+    end
+end
+
+local function startClimbSpeedLoop()
+    if climbSpeedLoop then return end
+    climbSpeedLoop = task.spawn(function()
+        while climbSpeedEnabled do
+            setClimbSpeed()
+            task.wait(0.5)
+        end
+        climbSpeedLoop = nil
+    end)
+end
+
+local function stopClimbSpeedLoop()
+    if climbSpeedLoop then
+        task.cancel(climbSpeedLoop)
+        climbSpeedLoop = nil
     end
 end
 
@@ -735,16 +774,82 @@ MiscTab:CreateToggle({
     end
 })
 
-MiscTab:CreateSlider({
-    Name = "WalkSpeed Value",
-    Range = {16, 200},
-    Increment = 1,
-    Suffix = "speed",
-    CurrentValue = 16,
+MiscTab:CreateInput({
+    Name = "Set WalkSpeed",
+    PlaceholderText = "Enter speed value (e.g. 50)",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        local speed = tonumber(Text)
+        if speed then
+            desiredWalkSpeed = speed
+            if walkSpeedEnabled then
+                setWalkSpeed()
+            end
+            Rayfield:Notify({
+                Title = "WalkSpeed Updated",
+                Content = "WalkSpeed set to: " .. speed,
+                Duration = 3,
+            })
+        else
+            Rayfield:Notify({
+                Title = "Invalid Input",
+                Content = "Please enter a valid number",
+                Duration = 3,
+                Image = 4483362458
+            })
+        end
+    end
+})
+
+-- Climb Speed Control
+MiscTab:CreateSection("Climb Control")
+
+MiscTab:CreateToggle({
+    Name = "Enable Climb Speed",
+    CurrentValue = false,
     Callback = function(Value)
-        desiredWalkSpeed = Value
-        if walkSpeedEnabled then
-            setWalkSpeed()
+        climbSpeedEnabled = Value
+        if Value then
+            startClimbSpeedLoop()
+            Rayfield:Notify({
+                Title = "Climb Speed",
+                Content = "Climb Speed enabled: " .. desiredClimbSpeed,
+                Duration = 3,
+            })
+        else
+            stopClimbSpeedLoop()
+            Rayfield:Notify({
+                Title = "Climb Speed",
+                Content = "Climb Speed disabled",
+                Duration = 3,
+            })
+        end
+    end
+})
+
+MiscTab:CreateInput({
+    Name = "Set Climb Speed",
+    PlaceholderText = "Enter speed value (e.g. 50)",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        local speed = tonumber(Text)
+        if speed then
+            desiredClimbSpeed = speed
+            if climbSpeedEnabled then
+                setClimbSpeed()
+            end
+            Rayfield:Notify({
+                Title = "Climb Speed Updated",
+                Content = "Climb Speed set to: " .. speed,
+                Duration = 3,
+            })
+        else
+            Rayfield:Notify({
+                Title = "Invalid Input",
+                Content = "Please enter a valid number",
+                Duration = 3,
+                Image = 4483362458
+            })
         end
     end
 })
