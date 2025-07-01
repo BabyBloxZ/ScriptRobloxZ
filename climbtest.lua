@@ -149,11 +149,6 @@ local function enableRemoteHook()
             return true
         end
 
-        -- Bypass Speed validation
-        if method == "InvokeServer" and (remoteName:find("Speed") or remoteName:find("Avatar")) then
-            return true
-        end
-
         return originalNamecall(self, ...)
     end)
     
@@ -163,14 +158,16 @@ end
 -- Enable remote hook on startup
 enableRemoteHook()
 
--- WalkSpeed System with Server-Side Bypass
+-- Speed System with Server-Side Bypass
 local desiredWalkSpeed = 16
 local walkSpeedEnabled = false
 local walkSpeedLoop = nil
 
 local function setWalkSpeed()
     local player = game:GetService("Players").LocalPlayer
-    player.AvatarSpeed = desiredWalkSpeed
+    if player:FindFirstChild("AvatarSpeed") then
+        player.AvatarSpeed.Value = desiredWalkSpeed
+    end
 end
 
 local function startWalkSpeedLoop()
@@ -198,7 +195,9 @@ local climbSpeedLoop = nil
 
 local function setClimbSpeed()
     local player = game:GetService("Players").LocalPlayer
-    player.AvatarSpeed = desiredClimbSpeed
+    if player:FindFirstChild("AvatarSpeed") then
+        player.AvatarSpeed.Value = desiredClimbSpeed
+    end
 end
 
 local function startClimbSpeedLoop()
